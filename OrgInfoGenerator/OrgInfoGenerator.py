@@ -17,20 +17,25 @@ def parse_data(response):
                           organization_info['data']['state']['registration_date'],
                           organization_info['data']['state']['actuality_date'])
         if organization_info['data']['type'] == 'LEGAL':
+            management = Requisites.Management(organization_info['data']['management']['name'],
+                                               organization_info['data']['management']['post'])
             legal_requisites = Requisites.LegalRequisites(organization_info['data']['inn'],
                                                           organization_info['data']['ogrn'],
                                                           organization_info['data']['opf']['code'],
-                                                          organization_info['data']['kpp'])
+                                                          organization_info['data']['kpp'],
+                                                          management)
             organization_element = Organization.LegalOrganization(organization_info['unrestricted_value'],
                                                                   legal_requisites,
-                                                                  org_state)
+                                                                  org_state,
+                                                                  organization_info['data']['address']['value'])
         elif organization_info['data']['type'] == 'INDIVIDUAL':
             legal_requisites = Requisites.IndividualRequisites(organization_info['data']['inn'],
                                                                organization_info['data']['ogrn'],
                                                                organization_info['data']['opf']['code'])
             organization_element = Organization.IndividualOrganization(organization_info['unrestricted_value'],
                                                                        legal_requisites,
-                                                                       org_state)
+                                                                       org_state,
+                                                                       organization_info['data']['address']['value'])
 
         result.append(organization_element)
     return result

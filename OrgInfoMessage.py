@@ -6,9 +6,11 @@ def make_org_info_message(org_element):
         params = {
             'inn': '<b>' + org_element.requisites.inn + '</b>',
             'ogrn': '<b>' + org_element.requisites.ogrn + '</b>',
-            'kpp': '<b>' + org_element.requisites.kpp + '</b>'
+            'kpp': '<b>' + org_element.requisites.kpp + '</b>',
+            'post': org_element.requisites.management.post,
+            'name': '<b>' + org_element.requisites.management.name + '</b>',
         }
-        requisites = u'ИНН\\ОГРН:\n {inn}\\{ogrn}\nКПП:\n {kpp}\n'.format(**params)
+        requisites = u'ИНН\\ОГРН:\n {inn}\\{ogrn}\nКПП:\n {kpp}\n{post}:\n{name}\n'.format(**params)
     else:
         params = {
             'inn': '<b>' + org_element.requisites.inn + '</b>',
