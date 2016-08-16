@@ -20,7 +20,6 @@ def find_org(bot, update):
     org_info_generator = OrgInfoGenerator.OrgInfoGenerator(DADATA_TOKEN)
     address_info_generator = AddressInfoGenerator.AddressInfoGenerator(DADATA_TOKEN)
 
-
     orgs_list = org_info_generator.get_org_list(update.message.text)
     location = address_info_generator.get_address_coords(orgs_list[0].address)
     reload(sys)
@@ -28,6 +27,7 @@ def find_org(bot, update):
     message = make_org_info_message(orgs_list[0])
     bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
     bot.sendLocation(chat_id=update.message.chat_id, latitude=location[0].geo_lat, longitude=location[0].geo_lon)
+
 
 def main():
     updater = Updater(token=TELEGRAM_TOKEN)
