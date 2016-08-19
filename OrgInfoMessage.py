@@ -24,7 +24,9 @@ def make_org_info_message(org_element):
         'registration_date': '<b>' + org_element.status.registration_date + '</b>',
         'status': '<b>' + org_element.status.status + '</b>'
     }
-    message = u'Наименование:\n {full_name}\n{requisites}Код ОПФ:\n {opf_code}\nДата регистрации:\n {registration_date}\nСтатус:\n {status}\n'.format(
-            **params)
+    message = u'Наименование:\n {full_name}\n' \
+              u'{requisites}Код ОПФ:\n {opf_code}\n' \
+              u'Дата регистрации:\n {registration_date}' \
+              u'\nСтатус:\n {status}\n'.format(**params)
 
     return message

@@ -1,9 +1,10 @@
 import requests
 import json
 
+import Settings.Settings
 from Geo import Geo
 
-BASE_URL = 'https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/%s'
+BASE_URL = Settings.Settings.get_setting_value('dadata_url')
 
 
 def parse_data(response):

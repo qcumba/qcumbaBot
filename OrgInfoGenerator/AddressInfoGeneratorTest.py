@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+import Settings.Settings
 
 from AddressInfoGenerator import AddressInfoGenerator
 
 
 class MyTestCase(unittest.TestCase):
-    dadata_token = '962ece1f054b4f80f558b93fd4fa635692530c48'
+    dadata_token = Settings.Settings.get_setting_value('dadata_token')
 
     def test_count(self):
         search_string = '117312, г Москва, ул Вавилова, д 19'

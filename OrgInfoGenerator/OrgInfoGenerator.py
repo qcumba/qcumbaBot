@@ -4,9 +4,11 @@ import json
 
 import Organization
 import Requisites
+import Settings.Settings
 from State import State
 
-BASE_URL = 'https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/%s'
+BASE_URL = Settings.Settings.get_setting_value('dadata_url')
+TOKEN = Settings.Settings.get_setting_value('dadata_token')
 
 
 def parse_data(response):
@@ -46,8 +48,8 @@ class OrgInfoGenerator(object):
     Making list of organizations
     """
 
-    def __init__(self, api_token):
-        self.api_token = api_token
+    def __init__(self):
+        self.api_token = TOKEN
         self.headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Token %s' % self.api_token
