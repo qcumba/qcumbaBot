@@ -7,14 +7,13 @@ class State(object):
     Current state of the organization
     """
 
-    def __init__(self, status, registration_date, actuality_date):
-        if status == 'ACTIVE':
+    def __init__(self, status):
+        state = status['status']
+        if state == 'ACTIVE':
             self.status = 'Действующая'
-        if status == 'LIQUIDATED':
+
+        if state == 'LIQUIDATED':
             self.status = 'Ликвидирована'
+            self.liquidation_date = datetime.datetime.fromtimestamp(float(status['liquidation_date']) / 1000).strftime('%d.%m.%Y')
 
-        reg_date = datetime.datetime.fromtimestamp(float(registration_date) / 1000).strftime('%d.%m.%Y')
-        act_date = datetime.datetime.fromtimestamp(float(actuality_date) / 1000).strftime('%d.%m.%Y')
-
-        self.registration_date = reg_date
-        self.actuality_date = act_date
+        self.registration_date = datetime.datetime.fromtimestamp(float(status['registration_date']) / 1000).strftime('%d.%m.%Y')

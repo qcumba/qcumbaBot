@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from emoji import emojize
 
 
 def make_org_info_message(org_element):
@@ -29,4 +30,4 @@ def make_org_info_message(org_element):
               u'Дата регистрации:\n {registration_date}' \
               u'\nСтатус:\n {status}\n'.format(**params)
 
-    return message
+    return emojize(':bank:', use_aliases=True) + message

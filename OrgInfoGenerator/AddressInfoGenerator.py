@@ -5,15 +5,14 @@ import Settings.Settings
 from Geo import Geo
 
 BASE_URL = Settings.Settings.get_setting_value('dadata_url')
+TOKEN = Settings.Settings.get_setting_value('dadata_token')
 
 
 def parse_data(response):
     addresses_info = json.loads(json.dumps(response.json()))
     result = []
     for address_info in addresses_info['suggestions']:
-        result.append(Geo(address_info['unrestricted_value'],
-                          address_info['data']['geo_lat'],
-                          address_info['data']['geo_lon']))
+        result.append(Geo(address_info))
 
     return result
 
@@ -23,8 +22,8 @@ class AddressInfoGenerator(object):
     Making list of organizations
     """
 
-    def __init__(self, api_token):
-        self.api_token = api_token
+    def __init__(self):
+        self.api_token = TOKEN
         self.headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Token %s' % self.api_token

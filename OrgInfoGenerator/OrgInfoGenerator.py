@@ -15,12 +15,11 @@ def parse_data(response):
     organizations_info = json.loads(json.dumps(response.json()))
     result = []
     for organization_info in organizations_info['suggestions']:
-        org_state = State(organization_info['data']['state']['status'],
-                          organization_info['data']['state']['registration_date'],
-                          organization_info['data']['state']['actuality_date'])
+        org_state = State(organization_info['data']['state'])
+
         if organization_info['data']['type'] == 'LEGAL':
-            management = Requisites.Management(organization_info['data']['management']['name'],
-                                               organization_info['data']['management']['post'])
+            management = Requisites.Management(organization_info['data']['management'])
+
             legal_requisites = Requisites.LegalRequisites(organization_info['data']['inn'],
                                                           organization_info['data']['ogrn'],
                                                           organization_info['data']['opf']['code'],

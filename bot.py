@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from emoji import emojize
+from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardMarkup
+from telegram.ext import CallbackQueryHandler
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from OrgInfoGenerator import OrgInfoGenerator
 from OrgInfoMessage import make_org_info_message
@@ -33,9 +37,18 @@ def find_org(bot, update):
     orgs_list = org_info_generator.get_org_list(update.message.text)
     location = address_info_generator.get_address_coords(orgs_list[0].address)
 
+    buttons = [[InlineKeyboardButton(text='Следующий результат', callback_data=str(orgs_list[1].id))]]
+
     message = make_org_info_message(orgs_list[0])
+
     bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
-    bot.sendLocation(chat_id=update.message.chat_id, latitude=location[0].geo_lat, longitude=location[0].geo_lon)
+    bot.sendLocation(chat_id=update.message.chat_id,
+                     latitude=location[0].geo_lat, longitude=location[0].geo_lon,
+                     reply_markup=InlineKeyboardMarkup(buttons))
+
+
+def get_other_result(bot, update):
+    bot.sendMessage(chat_id=update.callback_query.message.chat_id, text=update.callback_query.data)
 
 
 def main():
@@ -45,6 +58,7 @@ def main():
 
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(MessageHandler([Filters.text], find_org))
+    dispatcher.add_handler(CallbackQueryHandler(get_other_result))
 
     # updater.start_polling()
     try:
