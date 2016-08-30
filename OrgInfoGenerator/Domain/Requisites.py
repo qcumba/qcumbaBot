@@ -7,7 +7,7 @@ class BasicRequisites(object):
     def __init__(self, inn, ogrn, opf_code):
         self.inn = inn
         self.ogrn = ogrn
-        self.opf_code = opf_code
+        self.opf = opf_code
 
 
 class IndividualRequisites(BasicRequisites):
@@ -24,21 +24,6 @@ class LegalRequisites(BasicRequisites):
     Requisites for legal organizations
     """
 
-    def __init__(self, inn, ogrn, opf_code, kpp, management):
+    def __init__(self, inn, ogrn, opf_code, kpp):
         super(LegalRequisites, self).__init__(inn, ogrn, opf_code)
         self.kpp = kpp
-        self.management = management
-
-
-class Management(object):
-    """
-    Management post and name
-    """
-
-    def __init__(self, management):
-        if management is not None:
-            self.name = management['name']
-            if management['post'] is not None:
-                self.post = management['post']
-            else:
-                self.post = 'Директор'

@@ -43,7 +43,7 @@ def find_org(bot, update):
 
     bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
     bot.sendLocation(chat_id=update.message.chat_id,
-                     latitude=location[0].geo_lat, longitude=location[0].geo_lon,
+                     latitude=location[0].latitude, longitude=location[0].longitude,
                      reply_markup=InlineKeyboardMarkup(buttons))
 
 

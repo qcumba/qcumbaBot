@@ -15,5 +15,7 @@ class State(object):
         if state == 'LIQUIDATED':
             self.status = 'Ликвидирована'
             self.liquidation_date = datetime.datetime.fromtimestamp(float(status['liquidation_date']) / 1000).strftime('%d.%m.%Y')
+        else:
+            self.liquidation_date = None
 
         self.registration_date = datetime.datetime.fromtimestamp(float(status['registration_date']) / 1000).strftime('%d.%m.%Y')

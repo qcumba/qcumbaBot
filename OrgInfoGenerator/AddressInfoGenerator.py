@@ -1,8 +1,9 @@
-import requests
 import json
 
+import requests
+
 import Settings.Settings
-from Geo import Geo
+from Domain.Address import Address
 
 BASE_URL = Settings.Settings.get_setting_value('dadata_url')
 TOKEN = Settings.Settings.get_setting_value('dadata_token')
@@ -12,7 +13,7 @@ def parse_data(response):
     addresses_info = json.loads(json.dumps(response.json()))
     result = []
     for address_info in addresses_info['suggestions']:
-        result.append(Geo(address_info))
+        result.append(Address(address_info))
 
     return result
 
