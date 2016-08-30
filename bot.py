@@ -6,7 +6,8 @@ from telegram.ext import CallbackQueryHandler
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from OrgInfoGenerator import OrgInfoGenerator
 from OrgInfoMessage import make_org_info_message
-from OrgInfoGenerator import AddressInfoGenerator
+from DataBaseManager.DataBaseManager import insert_org_list, get_org
+
 import Settings.Settings
 import sys
 import logging
@@ -32,23 +33,32 @@ def start(bot, update):
 
 def find_org(bot, update):
     org_info_generator = OrgInfoGenerator.OrgInfoGenerator()
-    address_info_generator = AddressInfoGenerator.AddressInfoGenerator()
 
     orgs_list = org_info_generator.get_org_list(update.message.text)
-    location = address_info_generator.get_address_coords(orgs_list[0].address)
+    next_org_id = insert_org_list(orgs_list)
 
-    buttons = [[InlineKeyboardButton(text='Следующий результат', callback_data=str(orgs_list[1].id))]]
+    buttons = [[InlineKeyboardButton(text='Следующий результат', callback_data=str(next_org_id))]]
 
     message = make_org_info_message(orgs_list[0])
 
     bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
     bot.sendLocation(chat_id=update.message.chat_id,
-                     latitude=location[0].latitude, longitude=location[0].longitude,
+                     latitude=orgs_list[0].address.latitude, longitude=orgs_list[0].address.longitude,
                      reply_markup=InlineKeyboardMarkup(buttons))
 
 
 def get_other_result(bot, update):
-    bot.sendMessage(chat_id=update.callback_query.message.chat_id, text=update.callback_query.data)
+    org, next_id = get_org(int(update.callback_query.data))
+
+    message = make_org_info_message(org)
+    buttons = [
+        [InlineKeyboardButton(text='Предыдущий результат', callback_data=str(next_id))],
+        [InlineKeyboardButton(text='Следующий результат', callback_data=str(next_id))]
+    ]
+    bot.sendMessage(chat_id=update.callback_query.message.chat_id, text=message, parse_mode='HTML')
+    bot.sendLocation(chat_id=update.callback_query.message.chat_id,
+                     latitude=org.address.latitude, longitude=org.address.longitude,
+                     reply_markup=InlineKeyboardMarkup(buttons))
 
 
 def main():

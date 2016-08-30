@@ -7,6 +7,7 @@ from Domain import Organization
 from Domain import Requisites
 from Domain import State
 from Domain import Management
+import AddressInfoGenerator
 
 import Settings.Settings
 
@@ -16,6 +17,7 @@ TOKEN = Settings.Settings.get_setting_value('dadata_token')
 
 def parse_data(response):
     organizations_info = json.loads(json.dumps(response.json()))
+    address_info_generator = AddressInfoGenerator.AddressInfoGenerator()
     result = []
     for organization_info in organizations_info['suggestions']:
         org_state = State.State(organization_info['data']['state'])
@@ -48,7 +50,7 @@ def parse_data(response):
                 org_state,
                 organization_info['data']['address']['value']
             )
-
+        organization_element.address = address_info_generator.get_address_coords(organization_element.address)[0]
         result.append(organization_element)
     return result
 

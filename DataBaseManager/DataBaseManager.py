@@ -10,7 +10,6 @@ db = PostgresqlDatabase(
 
 
 class Address(Model):
-    id = UUIDField(primary_key=True)
     address_value = CharField()
     latitude = CharField(null=True)
     longitude = CharField(null=True)
@@ -20,17 +19,15 @@ class Address(Model):
 
 
 class State(Model):
-    id = UUIDField(primary_key=True)
     status = CharField()
     registration_date = DateField(null=True)
-    liquidation_date = DateField(null=True)
+    liquidation_date = DateField(default=None, null=True)
 
     class Meta:
         database = db
 
 
 class Management(Model):
-    id = UUIDField(primary_key=True)
     name = CharField(null=True)
     post = CharField(null=True)
 
@@ -39,7 +36,6 @@ class Management(Model):
 
 
 class Requisites(Model):
-    id = UUIDField(primary_key=True)
     inn = CharField()
     ogrn = CharField()
     opf = CharField()
@@ -50,8 +46,7 @@ class Requisites(Model):
 
 
 class Org(Model):
-    id = CharField()
-    group_id = CharField()
+    group_id = UUIDField()
     position = IntegerField()
     name = CharField()
     requisites = ForeignKeyField(Requisites, null=True)
@@ -69,41 +64,48 @@ class Org(Model):
 # Requisites.create_table()
 # Org.create_table()
 
+
 def insert_org_list(orgs):
     group_id = uuid.uuid4()
-
+    next_org_id = 0
     for index, org in enumerate(orgs):
-        Address.create(
-            id=uuid.uuid4(),
+        address = Address.create(
             address_value=org.address.address_value,
             latitude=org.address.latitude,
             longitude=org.address.longitude
         )
-        State.create(
-            id=uuid.uuid4(),
+        state = State.create(
             status=org.state.status,
             registration_date=org.state.registration_date,
             liquidation_date=org.state.liquidation_date
         )
-        Management.create(
-            id=uuid.uuid4(),
+        management = Management.create(
             name=org.management.name,
             post=org.management.post
         )
-        Requisites.create(
-            id=uuid.uuid4(),
+        requisites = Requisites.create(
             inn=org.requisites.inn,
             ogrn=org.requisites.ogrn,
             opf=org.requisites.opf,
             kpp=org.requisites.kpp
         )
-        Org.create(
-            id=org.id,
+        org = Org.create(
             group_id=group_id,
             position=index,
-            name=org.full_name,
-            requisites=Requisites,
-            management=Management,
-            state=State,
-            address=Address
+            name=org.name,
+            requisites=requisites,
+            management=management,
+            state=state,
+            address=address
         )
+        if index == 0:
+            org_id = org.id
+
+    return next_org_id
+
+
+def get_org(id):
+    result = Org.select().where(Org.id == id).get()
+    next_result = Org.select().where((Org.group_id == result.group_id) & (Org.position == result.position)).get()
+    next_id = next_result.id
+    return result, next_id

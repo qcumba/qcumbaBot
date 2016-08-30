@@ -7,8 +7,7 @@ class BasicOrganization(object):
     """
 
     def __init__(self, full_name, requisites, state, address):
-        self.id = uuid.uuid4()
-        self.full_name = full_name
+        self.name = full_name
         self.requisites = requisites
         self.state = state
         self.address = address
