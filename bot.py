@@ -35,9 +35,9 @@ def find_org(bot, update):
     org_info_generator = OrgInfoGenerator.OrgInfoGenerator()
 
     orgs_list = org_info_generator.get_org_list(update.message.text)
-    next_org_id = insert_org_list(orgs_list)
+    current_org_id = insert_org_list(orgs_list)
 
-    buttons = [[InlineKeyboardButton(text='Следующий результат', callback_data=str(next_org_id))]]
+    buttons = [[InlineKeyboardButton(text='Следующий результат', callback_data=str(current_org_id))]]
 
     message = make_org_info_message(orgs_list[0])
 

@@ -67,7 +67,6 @@ class Org(Model):
 
 def insert_org_list(orgs):
     group_id = uuid.uuid4()
-    next_org_id = 0
     for index, org in enumerate(orgs):
         address = Address.create(
             address_value=org.address.address_value,
@@ -99,13 +98,13 @@ def insert_org_list(orgs):
             address=address
         )
         if index == 0:
-            org_id = org.id
+            current_org_id = org.id
 
-    return next_org_id
+    return current_org_id
 
 
 def get_org(id):
     result = Org.select().where(Org.id == id).get()
-    next_result = Org.select().where((Org.group_id == result.group_id) & (Org.position == result.position)).get()
+    next_result = Org.select().where((Org.group_id == result.group_id) & (Org.position == result.position + 1)).get()
     next_id = next_result.id
-    return result, next_id
+    return next_result, next_id
