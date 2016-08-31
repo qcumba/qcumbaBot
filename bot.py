@@ -37,14 +37,28 @@ def find_org(bot, update):
     orgs_list = org_info_generator.get_org_list(update.message.text)
     current_org_id = insert_org_list(orgs_list)
 
-    buttons = [[InlineKeyboardButton(text='Следующий результат', callback_data=str(current_org_id))]]
-
+    if len(orgs_list) > 1:
+        buttons = InlineKeyboardMarkup(
+            [[InlineKeyboardButton(text='Следующий результат', callback_data=str(current_org_id))]]
+        )
+    else:
+        buttons = None
     message = make_org_info_message(orgs_list[0])
 
     bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
-    bot.sendLocation(chat_id=update.message.chat_id,
-                     latitude=orgs_list[0].address.latitude, longitude=orgs_list[0].address.longitude,
-                     reply_markup=InlineKeyboardMarkup(buttons))
+    if orgs_list[0].address is not None:
+        bot.sendLocation(
+            chat_id=update.message.chat_id,
+            latitude=orgs_list[0].address.latitude, longitude=orgs_list[0].address.longitude,
+            reply_markup=buttons
+        )
+    else:
+        message = emojize(':face_screaming_in_fear:', use_aliases=True) + u'Не найдена информация о местоположении!'
+        bot.sendMessage(
+            chat_id=update.message.chat_id,
+            text=message,
+            reply_markup=buttons
+        )
 
 
 def get_other_result(bot, update):

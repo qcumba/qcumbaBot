@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 
 import requests
@@ -12,6 +13,7 @@ TOKEN = Settings.Settings.get_setting_value('dadata_token')
 def parse_data(response):
     addresses_info = json.loads(json.dumps(response.json()))
     result = []
+
     for address_info in addresses_info['suggestions']:
         result.append(Address(address_info))
 

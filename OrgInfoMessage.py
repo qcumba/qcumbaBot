@@ -5,12 +5,18 @@ from emoji import emojize
 def make_org_info_message(org_element):
     params_requisites = {
         'inn': '<b>' + org_element.requisites.inn + '</b>',
-        'ogrn': '<b>' + org_element.requisites.ogrn + '</b>',
-        'kpp': '<b>' + org_element.requisites.kpp + '</b>',
-        'post': org_element.management.post,
-        'name': '<b>' + org_element.management.name + '</b>',
+        'ogrn': '<b>' + org_element.requisites.ogrn + '</b>'
     }
-    requisites = u'ИНН\\ОГРН:\n {inn}\\{ogrn}\nКПП:\n {kpp}\n{post}:\n{name}\n'.format(**params_requisites)
+    requisites = u'ИНН\\ОГРН:\n {inn}\\{ogrn}\n'
+    if hasattr(org_element.requisites, 'kpp') and org_element.requisites.kpp is not None:
+        params_requisites['kpp'] = org_element.requisites.kpp
+        requisites += u'КПП:\n {kpp}\n'
+    if hasattr(org_element, 'management') and hasattr(org_element.management, 'name'):
+        params_requisites['post'] = org_element.management.post,
+        params_requisites['name'] = '<b>' + org_element.management.name + '</b>'
+        requisites += org_element.management.post + ':\n{name}\n'
+    requisites = requisites.format(**params_requisites)
+
     params = {
         'full_name': '<b>' + org_element.name + '</b>',
         'requisites': requisites,

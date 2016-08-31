@@ -68,20 +68,27 @@ class Org(Model):
 def insert_org_list(orgs):
     group_id = uuid.uuid4()
     for index, org in enumerate(orgs):
-        address = Address.create(
-            address_value=org.address.address_value,
-            latitude=org.address.latitude,
-            longitude=org.address.longitude
-        )
+        if org.address is not None:
+            address = Address.create(
+                address_value=org.address.address_value,
+                latitude=org.address.latitude,
+                longitude=org.address.longitude
+            )
+        else:
+            address = None
         state = State.create(
             status=org.state.status,
             registration_date=org.state.registration_date,
             liquidation_date=org.state.liquidation_date
         )
-        management = Management.create(
-            name=org.management.name,
-            post=org.management.post
-        )
+        if hasattr(org, 'management'):
+            if hasattr(org.management, 'name'):
+                management = Management.create(
+                    name=org.management.name,
+                    post=org.management.post
+                )
+        else:
+            management = None
         requisites = Requisites.create(
             inn=org.requisites.inn,
             ogrn=org.requisites.ogrn,
@@ -105,6 +112,11 @@ def insert_org_list(orgs):
 
 def get_org(id):
     result = Org.select().where(Org.id == id).get()
-    next_result = Org.select().where((Org.group_id == result.group_id) & (Org.position == result.position + 1)).get()
-    next_id = next_result.id
-    return next_result, next_id
+    return result
+
+
+def get_org_by_position(position, group_id):
+    result = Org.select().where(
+        (Org.group_id == group_id) & (Org.position == position)
+    ).get()
+    return result

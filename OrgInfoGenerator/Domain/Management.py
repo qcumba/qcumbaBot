@@ -3,7 +3,6 @@ class Management(object):
     """
     Management post and name
     """
-
     def __init__(self, management):
         if management is not None:
             self.name = management['name']

@@ -35,7 +35,6 @@ def parse_data(response):
                 organization_info['unrestricted_value'],
                 legal_requisites,
                 org_state,
-                organization_info['data']['address']['value'],
                 management
             )
         elif organization_info['data']['type'] == 'INDIVIDUAL':
@@ -47,10 +46,11 @@ def parse_data(response):
             organization_element = Organization.IndividualOrganization(
                 organization_info['unrestricted_value'],
                 legal_requisites,
-                org_state,
-                organization_info['data']['address']['value']
+                org_state
             )
-        organization_element.address = address_info_generator.get_address_coords(organization_element.address)[0]
+        address = address_info_generator.get_address_coords(organization_info['data']['address']['value'])
+        if len(address) > 0:
+            organization_element.address = address[0]
         result.append(organization_element)
     return result
 

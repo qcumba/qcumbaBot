@@ -17,6 +17,7 @@ class IndividualRequisites(BasicRequisites):
 
     def __init__(self, inn, ogrn, opf_code):
         super(IndividualRequisites, self).__init__(inn, ogrn, opf_code)
+        self.kpp = None
 
 
 class LegalRequisites(BasicRequisites):
