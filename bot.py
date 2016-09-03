@@ -1,26 +1,25 @@
 # -*- coding: utf-8 -*-
+import telegram
 from emoji import emojize
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 from telegram.ext import CallbackQueryHandler
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from OrgInfoGenerator import OrgInfoGenerator
+from OrgInfoGenerator.Logger.Logger import Logger
 from OrgInfoMessage import make_org_info_message
 from DataBaseManager.DataBaseManager import insert_org_list, get_org
 
 import Settings.Settings
 import sys
-import logging
-
+import atexit
 
 TELEGRAM_TOKEN = Settings.Settings.get_setting_value('telegram_token')
 
-
-logging.basicConfig(level=logging.INFO,
-                    filename='log_bot.txt',
-                    format='%(asctime)s - %(levelname)s - %(message)s')
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+logger = Logger()
 
 
 def start(bot, update):
@@ -32,51 +31,97 @@ def start(bot, update):
 
 
 def find_org(bot, update):
-    org_info_generator = OrgInfoGenerator.OrgInfoGenerator()
+    logger.write_info_message(
+        'From - ' +
+        update.message.from_user.first_name + ' ' + update.message.from_user.last_name +
+        ' text - ' + update.message.text
+    )
+    try:
+        bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        org_info_generator = OrgInfoGenerator.OrgInfoGenerator()
 
-    orgs_list = org_info_generator.get_org_list(update.message.text)
-    current_org_id = insert_org_list(orgs_list)
+        orgs_list = org_info_generator.get_org_list(update.message.text)
+        if len(orgs_list) < 1:
+            message = emojize(':worried_face:', use_aliases=True) + \
+                      u'К сожалению, но по вашему запросу ничего не найдено.\nПопробуйте еще раз.'
+            bot.sendMessage(
+                chat_id=update.message.chat_id,
+                text=message
+            )
+        next_org_id = insert_org_list(orgs_list)
 
-    if len(orgs_list) > 1:
-        buttons = InlineKeyboardMarkup(
-            [[InlineKeyboardButton(text='Следующий результат', callback_data=str(current_org_id))]]
-        )
-    else:
-        buttons = None
-    message = make_org_info_message(orgs_list[0])
+        if len(orgs_list) > 1:
+            buttons = InlineKeyboardMarkup(
+                [[InlineKeyboardButton(text='Следующий результат', callback_data=str(next_org_id))]]
+            )
+        else:
+            buttons = None
+        message = make_org_info_message(orgs_list[0])
 
-    bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
-    if orgs_list[0].address is not None:
+        bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
+        if orgs_list[0].address is not None:
+            bot.sendLocation(
+                chat_id=update.message.chat_id,
+                latitude=orgs_list[0].address.latitude, longitude=orgs_list[0].address.longitude,
+                reply_markup=buttons
+            )
+        else:
+            message = emojize(':face_screaming_in_fear:', use_aliases=True) + u'Не найдена информация о местоположении!'
+            bot.sendMessage(
+                chat_id=update.message.chat_id,
+                text=message,
+                reply_markup=buttons
+            )
+    except Exception as ex:
+        logger.write_error_message('Global error - ' + ex.message)
+        message = emojize(':thinking_face:', use_aliases=True) + u'В процессе поиска произошла ошибка!'
+        bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
+
+
+def get_other_result(bot, update):
+    logger.write_info_message(
+        'From - ' +
+        update.callback_query.message.from_user.first_name + ' ' + update.callback_query.message.from_user.last_name +
+        ' text - ' + update.callback_query.message.text
+    )
+    bot.sendChatAction(chat_id=update.callback_query.message.chat_id, action=telegram.ChatAction.TYPING)
+    current_org, previous_org, next_org = get_org(int(update.callback_query.data))
+
+    message = make_org_info_message(current_org)
+
+    buttons = []
+
+    if previous_org is not None:
+        previous_org_button = [
+            InlineKeyboardButton(text='Предыдущий результат', callback_data=str(previous_org.id))
+        ]
+        buttons.append(previous_org_button)
+    if next_org is not None:
+        next_org_button = [
+            InlineKeyboardButton(text='Следующий результат', callback_data=str(next_org.id))
+        ]
+        buttons.append(next_org_button)
+
+    buttons = InlineKeyboardMarkup(buttons)
+
+    bot.sendMessage(chat_id=update.callback_query.message.chat_id, text=message, parse_mode='HTML')
+    if current_org.address is not None:
         bot.sendLocation(
-            chat_id=update.message.chat_id,
-            latitude=orgs_list[0].address.latitude, longitude=orgs_list[0].address.longitude,
+            chat_id=update.callback_query.message.chat_id,
+            latitude=current_org.address.latitude, longitude=current_org.address.longitude,
             reply_markup=buttons
         )
     else:
         message = emojize(':face_screaming_in_fear:', use_aliases=True) + u'Не найдена информация о местоположении!'
         bot.sendMessage(
-            chat_id=update.message.chat_id,
+            chat_id=update.callback_query.message.chat_id,
             text=message,
             reply_markup=buttons
         )
 
 
-def get_other_result(bot, update):
-    org, next_id = get_org(int(update.callback_query.data))
-
-    message = make_org_info_message(org)
-    buttons = [
-        [InlineKeyboardButton(text='Предыдущий результат', callback_data=str(next_id))],
-        [InlineKeyboardButton(text='Следующий результат', callback_data=str(next_id))]
-    ]
-    bot.sendMessage(chat_id=update.callback_query.message.chat_id, text=message, parse_mode='HTML')
-    bot.sendLocation(chat_id=update.callback_query.message.chat_id,
-                     latitude=org.address.latitude, longitude=org.address.longitude,
-                     reply_markup=InlineKeyboardMarkup(buttons))
-
-
 def main():
-    logging.info('Bot started')
+    logger.write_info_message('Bot started.')
     updater = Updater(token=TELEGRAM_TOKEN)
     dispatcher = updater.dispatcher
 
@@ -93,7 +138,12 @@ def main():
                               cert='C:\Certs\cert.pem',
                               webhook_url='https://qcumba.com:8443/%s' % TELEGRAM_TOKEN)
     except Exception, e:
-        logging.error('Error occurred! More info: %s' % e.message)
+        logger.write_error_message('Error occurred! More info: %s' % e.message)
 
+
+def exit_handler():
+    logger.write_info_message('Bot stopped.')
+
+atexit.register(exit_handler)
 if __name__ == '__main__':
     main()

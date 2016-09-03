@@ -67,8 +67,9 @@ class Org(Model):
 
 def insert_org_list(orgs):
     group_id = uuid.uuid4()
+    next_org_id = None
     for index, org in enumerate(orgs):
-        if org.address is not None:
+        if hasattr(org, 'address'):
             address = Address.create(
                 address_value=org.address.address_value,
                 latitude=org.address.latitude,
@@ -81,12 +82,11 @@ def insert_org_list(orgs):
             registration_date=org.state.registration_date,
             liquidation_date=org.state.liquidation_date
         )
-        if hasattr(org, 'management'):
-            if hasattr(org.management, 'name'):
-                management = Management.create(
-                    name=org.management.name,
-                    post=org.management.post
-                )
+        if hasattr(org, 'management') and hasattr(org.management, 'name'):
+            management = Management.create(
+                name=org.management.name,
+                post=org.management.post
+            )
         else:
             management = None
         requisites = Requisites.create(
@@ -104,15 +104,31 @@ def insert_org_list(orgs):
             state=state,
             address=address
         )
-        if index == 0:
-            current_org_id = org.id
+        if index == 1:
+            next_org_id = org.id
 
-    return current_org_id
+    return next_org_id
 
 
-def get_org(id):
-    result = Org.select().where(Org.id == id).get()
-    return result
+def get_org(org_id):
+    current_org = Org.select().where(Org.id == org_id).get()
+    count = Org.select().where(Org.group_id == current_org.group_id).count()
+    position = current_org.position
+    if position > 0:
+        previous_org = Org.select().where(
+            (Org.group_id == current_org.group_id) & (Org.position == position - 1)
+        ).get()
+    else:
+        previous_org = None
+
+    if position < count - 1:
+        next_org = Org.select().where(
+            (Org.group_id == current_org.group_id) & (Org.position == position + 1)
+        ).get()
+    else:
+        next_org = None
+
+    return current_org, previous_org, next_org
 
 
 def get_org_by_position(position, group_id):
