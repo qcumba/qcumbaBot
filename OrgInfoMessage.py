@@ -3,10 +3,19 @@ from emoji import emojize
 
 
 def make_org_info_message(org_element):
+    if org_element.requisites.inn is None:
+        inn_message = 'Ликвидирован'
+    else:
+        inn_message = org_element.requisites.inn
     params_requisites = {
-        'inn': '<b>' + org_element.requisites.inn + '</b>',
+        'inn': '<b>' + inn_message + '</b>',
         'ogrn': '<b>' + org_element.requisites.ogrn + '</b>'
     }
+
+    if org_element.state.registration_date is not None:
+        reg_date = org_element.state.registration_date.strftime("%d-%m-%Y")
+    else:
+        reg_date = 'Отсутствует информация'
     requisites = u'ИНН\\ОГРН:\n {inn}\\{ogrn}\n'
     if hasattr(org_element.requisites, 'kpp') and org_element.requisites.kpp is not None:
         params_requisites['kpp'] = org_element.requisites.kpp
@@ -21,7 +30,7 @@ def make_org_info_message(org_element):
         'full_name': '<b>' + org_element.name + '</b>',
         'requisites': requisites,
         'opf': '<b>' + org_element.requisites.opf + '</b>',
-        'registration_date': '<b>' + org_element.state.registration_date.strftime("%d-%m-%Y") + '</b>',
+        'registration_date': '<b>' + reg_date + '</b>',
         'status': '<b>' + org_element.state.status + '</b>'
     }
     message = u'Наименование:\n {full_name}\n' \

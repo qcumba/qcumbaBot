@@ -5,9 +5,16 @@ class BasicRequisites(object):
     """
 
     def __init__(self, inn, ogrn, opf_code):
-        self.inn = inn
+        if inn is not None:
+            self.inn = inn
+        else:
+            self.inn = 'Ликвидирован!'
+
+        if opf_code is not None:
+            self.opf = ogrn
+        else:
+            self.opf = 'Ликвидирован или отсутствует!'
         self.ogrn = ogrn
-        self.opf = opf_code
 
 
 class IndividualRequisites(BasicRequisites):

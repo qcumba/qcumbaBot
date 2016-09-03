@@ -20,6 +20,8 @@ class Logger(object):
     logging_format = '%(asctime)s - %(levelname)s - %(message)s'
 
     def __init__(self):
+        # logging only warning messages from requests
+        logging.getLogger("requests").setLevel(logging.WARNING)
         logging.basicConfig(
             level=self.logging_level,
             filename=self.file_name,

@@ -10,7 +10,8 @@ class BasicOrganization(object):
         self.name = full_name
         self.requisites = requisites
         self.state = state
-        self.address = address
+        if address is not None:
+            self.address = address
 
 
 class LegalOrganization(BasicOrganization):

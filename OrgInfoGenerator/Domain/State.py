@@ -18,4 +18,7 @@ class State(object):
         else:
             self.liquidation_date = None
 
-        self.registration_date = datetime.datetime.fromtimestamp(float(status['registration_date']) / 1000)
+        if status['registration_date'] is not None:
+            self.registration_date = datetime.datetime.fromtimestamp(float(status['registration_date']) / 1000)
+        else:
+            self.registration_date = None

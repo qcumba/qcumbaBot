@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import atexit
 import sys
+import traceback
 
 import telegram
 from emoji import emojize
@@ -40,6 +41,7 @@ def find_org(bot, update):
         org_info_generator = OrgInfoGenerator.OrgInfoGenerator()
 
         orgs_list = org_info_generator.get_org_list(update.message.text)
+        logger.write_info_message('Всего найдено - ' + str(len(orgs_list)))
         if len(orgs_list) < 1:
             message = emojize(':worried_face:', use_aliases=True) + \
                       u'К сожалению, но по вашему запросу ничего не найдено.\nПопробуйте еще раз.'
@@ -47,41 +49,48 @@ def find_org(bot, update):
                 chat_id=update.message.chat_id,
                 text=message
             )
-        next_org_id = insert_org_list(orgs_list)
-
-        if len(orgs_list) > 1:
-            buttons = InlineKeyboardMarkup(
-                [[InlineKeyboardButton(text='Следующий результат', callback_data=str(next_org_id))]]
-            )
+        if len(orgs_list) >= 1:
+            if len(orgs_list) != 1:
+                next_org_id = insert_org_list(orgs_list)
+                buttons = InlineKeyboardMarkup(
+                    [[InlineKeyboardButton(text='Следующий результат', callback_data=str(next_org_id))]]
+                )
+            else:
+                buttons = None
+            message = make_org_info_message(orgs_list[0])
+            bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
+            if hasattr(orgs_list[0], 'address'):
+                bot.sendLocation(
+                    chat_id=update.message.chat_id,
+                    latitude=orgs_list[0].address.latitude, longitude=orgs_list[0].address.longitude,
+                    reply_markup=buttons
+                )
+            else:
+                message = emojize(':face_screaming_in_fear:',
+                                  use_aliases=True) + u'Не найдена информация о местоположении!'
+                bot.sendMessage(
+                    chat_id=update.message.chat_id,
+                    text=message,
+                    reply_markup=buttons
+                )
         else:
             buttons = None
-        message = make_org_info_message(orgs_list[0])
-
-        bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
-        if orgs_list[0].address is not None:
-            bot.sendLocation(
-                chat_id=update.message.chat_id,
-                latitude=orgs_list[0].address.latitude, longitude=orgs_list[0].address.longitude,
-                reply_markup=buttons
-            )
-        else:
-            message = emojize(':face_screaming_in_fear:', use_aliases=True) + u'Не найдена информация о местоположении!'
-            bot.sendMessage(
-                chat_id=update.message.chat_id,
-                text=message,
-                reply_markup=buttons
-            )
     except Exception as ex:
-        logger.write_error_message('Global error - ' + ex.message)
+        tb = sys.exc_info()[-1]
+        stk = traceback.extract_tb(tb, 1)
+        function_name = stk[0][2]
+        problem_line = stk[0][1]
+        logger.write_error_message(
+            'Global error in function ' + function_name + '(line: ' + str(problem_line) + '): ' + ex.message)
         message = emojize(':thinking_face:', use_aliases=True) + u'В процессе поиска произошла ошибка!'
         bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
 
 
 def get_other_result(bot, update):
     logger.write_info_message(
-        'From - ' +
-        update.callback_query.message.from_user.first_name + ' ' + update.callback_query.message.from_user.last_name +
-        ' text - ' + update.callback_query.message.text
+        'Callback query: From - ' +
+        update.callback_query.message.chat.first_name +
+        ' query_id = ' + update.callback_query.data
     )
     bot.sendChatAction(chat_id=update.callback_query.message.chat_id, action=telegram.ChatAction.TYPING)
     current_org, previous_org, next_org = get_org(int(update.callback_query.data))
@@ -142,6 +151,7 @@ def main():
 
 def exit_handler():
     logger.write_info_message('Bot stopped.')
+
 
 atexit.register(exit_handler)
 if __name__ == '__main__':
