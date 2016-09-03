@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
+import atexit
+import sys
+
 import telegram
 from emoji import emojize
-from telegram import InlineKeyboardButton
-from telegram import InlineKeyboardMarkup
-from telegram.ext import CallbackQueryHandler
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from OrgInfoGenerator import OrgInfoGenerator
-from OrgInfoGenerator.Logger.Logger import Logger
-from OrgInfoMessage import make_org_info_message
-from DataBaseManager.DataBaseManager import insert_org_list, get_org
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
 import Settings.Settings
-import sys
-import atexit
+from DataBaseManager.DataBaseManager import insert_org_list, get_org
+from Logger.Logger import Logger
+from OrgInfoGenerator import OrgInfoGenerator
+from OrgInfoMessage import make_org_info_message
 
 TELEGRAM_TOKEN = Settings.Settings.get_setting_value('telegram_token')
 

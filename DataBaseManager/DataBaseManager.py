@@ -1,11 +1,17 @@
 import uuid
 from peewee import *
+from Settings import Settings
+
+DB_NAME = Settings.get_setting_value('db_name')
+DB_USER_NAME = Settings.get_setting_value('db_user_name')
+DB_PASSWORD = Settings.get_setting_value('db_password')
+DB_HOST = Settings.get_setting_value('db_host')
 
 db = PostgresqlDatabase(
-    'orgs',
-    user='bot',
-    password='vePu4r6AsX8',
-    host='localhost',
+    DB_NAME,
+    user=DB_USER_NAME,
+    password=DB_PASSWORD,
+    host=DB_HOST,
 )
 
 
@@ -69,43 +75,46 @@ def insert_org_list(orgs):
     group_id = uuid.uuid4()
     next_org_id = None
     for index, org in enumerate(orgs):
-        if hasattr(org, 'address'):
-            address = Address.create(
-                address_value=org.address.address_value,
-                latitude=org.address.latitude,
-                longitude=org.address.longitude
+        try:
+            if hasattr(org, 'address'):
+                address = Address.create(
+                    address_value=org.address.address_value,
+                    latitude=org.address.latitude,
+                    longitude=org.address.longitude
+                )
+            else:
+                address = None
+            state = State.create(
+                status=org.state.status,
+                registration_date=org.state.registration_date,
+                liquidation_date=org.state.liquidation_date
             )
-        else:
-            address = None
-        state = State.create(
-            status=org.state.status,
-            registration_date=org.state.registration_date,
-            liquidation_date=org.state.liquidation_date
-        )
-        if hasattr(org, 'management') and hasattr(org.management, 'name'):
-            management = Management.create(
-                name=org.management.name,
-                post=org.management.post
+            if hasattr(org, 'management') and hasattr(org.management, 'name'):
+                management = Management.create(
+                    name=org.management.name,
+                    post=org.management.post
+                )
+            else:
+                management = None
+            requisites = Requisites.create(
+                inn=org.requisites.inn,
+                ogrn=org.requisites.ogrn,
+                opf=org.requisites.opf,
+                kpp=org.requisites.kpp
             )
-        else:
-            management = None
-        requisites = Requisites.create(
-            inn=org.requisites.inn,
-            ogrn=org.requisites.ogrn,
-            opf=org.requisites.opf,
-            kpp=org.requisites.kpp
-        )
-        org = Org.create(
-            group_id=group_id,
-            position=index,
-            name=org.name,
-            requisites=requisites,
-            management=management,
-            state=state,
-            address=address
-        )
-        if index == 1:
-            next_org_id = org.id
+            org = Org.create(
+                group_id=group_id,
+                position=index,
+                name=org.name,
+                requisites=requisites,
+                management=management,
+                state=state,
+                address=address
+            )
+            if index == 1:
+                next_org_id = org.id
+        except Exception as ex:
+            raise
 
     return next_org_id
 
