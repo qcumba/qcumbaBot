@@ -31,6 +31,13 @@ def start(bot, update):
 
 
 def find_org(bot, update):
+    if len(update.message.text) > 255:
+        message = emojize(':worried_face:', use_aliases=True) + \
+                  u'К сожалению, но Вы ввели слишком длинный запрос.\nПопробуйте еще раз.'
+        bot.sendMessage(
+            chat_id=update.message.chat_id,
+            text=message
+        )
     logger.write_info_message(
         'From - ' +
         update.message.from_user.first_name + ' ' + update.message.from_user.last_name +
@@ -57,7 +64,9 @@ def find_org(bot, update):
                 )
             else:
                 buttons = None
-            message = make_org_info_message(orgs_list[0])
+
+            find_count_info = 'Найдено ' + str(len(orgs_list)) + '\n'
+            message = find_count_info + make_org_info_message(orgs_list[0])
             bot.sendMessage(chat_id=update.message.chat_id, text=message, parse_mode='HTML')
             if hasattr(orgs_list[0], 'address'):
                 bot.sendLocation(
