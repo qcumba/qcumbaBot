@@ -1,3 +1,7 @@
 telegram_token: ''
 dadata_url: ''
 dadata_token: ''
+db_name: ''
+db_user_name: ''
+db_password: ''
+db_host: ''
