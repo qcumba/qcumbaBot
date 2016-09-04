@@ -32,12 +32,7 @@ def start(bot, update):
 
 def find_org(bot, update):
     if len(update.message.text) > 255:
-        message = emojize(':worried_face:', use_aliases=True) + \
-                  u'К сожалению, но Вы ввели слишком длинный запрос.\nПопробуйте еще раз.'
-        bot.sendMessage(
-            chat_id=update.message.chat_id,
-            text=message
-        )
+        make_no_results_message(bot, update)
     logger.write_info_message(
         'From - ' +
         update.message.from_user.first_name + ' ' + update.message.from_user.last_name +
@@ -50,12 +45,7 @@ def find_org(bot, update):
         orgs_list = org_info_generator.get_org_list(update.message.text)
         logger.write_info_message('Всего найдено - ' + str(len(orgs_list)))
         if len(orgs_list) < 1:
-            message = emojize(':worried_face:', use_aliases=True) + \
-                      u'К сожалению, но по вашему запросу ничего не найдено.\nПопробуйте еще раз.'
-            bot.sendMessage(
-                chat_id=update.message.chat_id,
-                text=message
-            )
+            make_no_results_message(bot, update)
         if len(orgs_list) >= 1:
             if len(orgs_list) != 1:
                 next_org_id = insert_org_list(orgs_list)
@@ -107,19 +97,10 @@ def get_other_result(bot, update):
     message = make_org_info_message(current_org)
 
     buttons = []
-
-
-
     if previous_org is not None:
-        previous_org_button = [
-            InlineKeyboardButton(text='Предыдущий результат', callback_data=str(previous_org.id))
-        ]
-        buttons.append(previous_org_button)
+        buttons = make_buttons(buttons, 'Предыдущий результат', previous_org.id)
     if next_org is not None:
-        next_org_button = [
-            InlineKeyboardButton(text='Следующий результат', callback_data=str(next_org.id))
-        ]
-        buttons.append(next_org_button)
+        buttons = make_buttons(buttons, 'Следующий результат', next_org.id)
 
     buttons = InlineKeyboardMarkup(buttons)
 
@@ -139,6 +120,23 @@ def get_other_result(bot, update):
         )
 
 
+def make_no_results_message(bot, update):
+    message = emojize(':worried_face:', use_aliases=True) + \
+              u'К сожалению, но по вашему запросу ничего не найдено.\nПопробуйте еще раз.'
+    bot.sendMessage(
+        chat_id=update.message.chat_id,
+        text=message
+    )
+
+
+def make_buttons(buttons, button_text, call_data):
+    button = [
+        InlineKeyboardButton(text=button_text, callback_data=str(call_data))
+    ]
+    buttons.append(button)
+    return buttons
+
+
 def main():
     logger.write_info_message('Bot started.')
     updater = Updater(token=TELEGRAM_TOKEN)
@@ -156,8 +154,8 @@ def main():
                               key='C:\Certs\private.key',
                               cert='C:\Certs\cert.pem',
                               webhook_url='https://qcumba.com:8443/%s' % TELEGRAM_TOKEN)
-    except Exception, e:
-        logger.write_error_message('Error occurred! More info: %s' % e.message)
+    except Exception as ex:
+        logger.write_error_message('Error occurred! More info: %s' % ex.message)
 
 
 def exit_handler():
