@@ -10,8 +10,8 @@ class BasicRequisites(object):
         else:
             self.inn = 'Ликвидирован!'
 
-        if opf_code is not None:
-            self.opf = ogrn
+        if opf_code is not None and opf_code['code'] is not None:
+            self.opf = opf_code['code']
         else:
             self.opf = 'Ликвидирован или отсутствует!'
         self.ogrn = ogrn

@@ -28,7 +28,7 @@ def parse_data(response):
             legal_requisites = Requisites.LegalRequisites(
                 organization_info['data']['inn'],
                 organization_info['data']['ogrn'],
-                organization_info['data']['opf']['code'],
+                organization_info['data']['opf'],
                 organization_info['data']['kpp']
             )
             organization_element = Organization.LegalOrganization(
@@ -41,7 +41,7 @@ def parse_data(response):
             legal_requisites = Requisites.IndividualRequisites(
                 organization_info['data']['inn'],
                 organization_info['data']['ogrn'],
-                organization_info['data']['opf']['code']
+                organization_info['data']['opf']
             )
             organization_element = Organization.IndividualOrganization(
                 organization_info['unrestricted_value'],

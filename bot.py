@@ -108,6 +108,8 @@ def get_other_result(bot, update):
 
     buttons = []
 
+
+
     if previous_org is not None:
         previous_org_button = [
             InlineKeyboardButton(text='Предыдущий результат', callback_data=str(previous_org.id))
